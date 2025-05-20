@@ -10,11 +10,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 // Класс клиента для работы с API OpenRouter
 class OpenRouterClient {
   // API ключ для авторизации
-  final String? apiKey;
+  String? apiKey;
   // Базовый URL API
-  final String? baseUrl;
+  String? baseUrl;
   // Заголовки HTTP запросов
-  final Map<String, String> headers;
+  Map<String, String> headers;
 
   // Единственный экземпляр класса (Singleton)
   static final OpenRouterClient _instance = OpenRouterClient._internal();
@@ -37,6 +37,36 @@ class OpenRouterClient {
         } {
     // Инициализация клиента
     _initializeClient();
+  }
+
+  // Метод перезагрузки клиента с новыми настройками
+  void reload() {
+    try {
+      if (kDebugMode) {
+        print('Reloading OpenRouterClient with new settings...');
+      }
+
+      // Обновляем API ключ и базовый URL из обновленных переменных среды
+      apiKey = dotenv.env['OPENROUTER_API_KEY'];
+      baseUrl = dotenv.env['BASE_URL'];
+
+      // Обновляем заголовки с новым API ключом
+      headers = {
+        'Authorization': 'Bearer ${dotenv.env['OPENROUTER_API_KEY']}',
+        'Content-Type': 'application/json',
+        'X-Title': 'AI Chat Flutter',
+      };
+
+      if (kDebugMode) {
+        print('OpenRouterClient reloaded successfully');
+        print('New Base URL: $baseUrl');
+      }
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        print('Error reloading OpenRouterClient: $e');
+        print('Stack trace: $stackTrace');
+      }
+    }
   }
 
   // Метод инициализации клиента
@@ -178,6 +208,56 @@ class OpenRouterClient {
     } catch (e) {
       if (kDebugMode) {
         print('Error sending message: $e');
+      }
+      return {'error': e.toString()};
+    }
+  }
+
+  // Метод отправки сообщения через API с историей сообщений
+  Future<Map<String, dynamic>> sendMessageWithHistory(
+      List<Map<String, String>> messages, String model) async {
+    try {
+      // Подготовка данных для отправки
+      final data = {
+        'model': model, // Модель для генерации ответа
+        'messages': messages, // История сообщений
+        'max_tokens': int.parse(dotenv.env['MAX_TOKENS'] ??
+            '1000'), // Максимальное количество токенов
+        'temperature': double.parse(
+            dotenv.env['TEMPERATURE'] ?? '0.7'), // Температура генерации
+        'stream': false, // Отключение потоковой передачи
+      };
+
+      if (kDebugMode) {
+        print('Sending message to API with history: ${json.encode(data)}');
+      }
+
+      // Выполнение POST запроса
+      final response = await http.post(
+        Uri.parse('$baseUrl/chat/completions'),
+        headers: headers,
+        body: json.encode(data),
+      );
+
+      if (kDebugMode) {
+        print('Message response status: ${response.statusCode}');
+        print('Message response body: ${response.body}');
+      }
+
+      if (response.statusCode == 200) {
+        // Успешный ответ
+        final responseData = json.decode(utf8.decode(response.bodyBytes));
+        return responseData;
+      } else {
+        // Обработка ошибки
+        final errorData = json.decode(utf8.decode(response.bodyBytes));
+        return {
+          'error': errorData['error']?['message'] ?? 'Unknown error occurred'
+        };
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error sending message with history: $e');
       }
       return {'error': e.toString()};
     }
