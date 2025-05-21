@@ -8,8 +8,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 // Импорт кастомного провайдера для управления состоянием чата
 import 'providers/chat_provider.dart';
-// Импорт основного экрана чата
-import 'screens/chat_screen.dart';
+// Импорт маршрутов
+import 'routes.dart';
 
 // Виджет для обработки и отлова ошибок в приложении
 class ErrorBoundaryWidget extends StatelessWidget {
@@ -172,21 +172,35 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           // Цветовая схема на основе синего цвета
           colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue, // Основной цвет
+            seedColor:
+                const Color(0xFF3B82F6), // Основной цвет (современный синий)
             brightness: Brightness.dark, // Темная тема
+            primary: const Color(0xFF3B82F6), // Современный синий
+            secondary: const Color(0xFF10B981), // Современный зеленый
+            tertiary: const Color(0xFFF59E0B), // Современный золотой
+            background: const Color(0xFF111827), // Темно-серый фон
+            surface: const Color(0xFF1F2937), // Поверхность элементов
+            error: const Color(0xFFEF4444), // Красный цвет для ошибок
           ),
           // Использование Material 3
           useMaterial3: true,
           // Цвет фона Scaffold
-          scaffoldBackgroundColor: const Color(0xFF1E1E1E),
+          scaffoldBackgroundColor: const Color(0xFF111827),
           // Настройка темы AppBar
           appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFF262626), // Цвет фона
+            backgroundColor: Color(0xFF1F2937), // Цвет фона
             foregroundColor: Colors.white, // Цвет текста
+            elevation: 2, // Легкая тень для глубины
+            centerTitle: true, // Центрирование заголовка
           ),
           // Настройка темы диалогов
           dialogTheme: const DialogTheme(
-            backgroundColor: Color(0xFF333333), // Цвет фона
+            backgroundColor: Color(0xFF1F2937), // Цвет фона
+            elevation: 8, // Тень для создания эффекта глубины
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.all(Radius.circular(16)), // Скругленные углы
+            ),
             titleTextStyle: TextStyle(
               color: Colors.white, // Цвет заголовка
               fontSize: 20, // Размер шрифта
@@ -201,6 +215,12 @@ class MyApp extends StatelessWidget {
           ),
           // Настройка текстовой темы
           textTheme: const TextTheme(
+            displayLarge: TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
             bodyLarge: TextStyle(
               fontFamily: 'Roboto', // Шрифт
               fontSize: 16, // Размер шрифта
@@ -211,30 +231,64 @@ class MyApp extends StatelessWidget {
               fontSize: 14, // Размер шрифта
               color: Colors.white, // Цвет текста
             ),
+            labelLarge: TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
           ),
           // Настройка темы кнопок
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.white, // Цвет текста
+              backgroundColor: const Color(0xFF3B82F6), // Фон кнопки
+              elevation: 2, // Легкая тень
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8), // Скругленные углы
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               textStyle: const TextStyle(
                 fontFamily: 'Roboto', // Шрифт
                 fontSize: 14, // Размер шрифта
+                fontWeight: FontWeight.w500, // Средне-жирный шрифт
               ),
             ),
           ),
           // Настройка темы текстовых кнопок
           textButtonTheme: TextButtonThemeData(
             style: TextButton.styleFrom(
-              foregroundColor: Colors.white, // Цвет текста
+              foregroundColor: const Color(0xFF3B82F6), // Цвет текста
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8), // Скругленные углы
+              ),
               textStyle: const TextStyle(
                 fontFamily: 'Roboto', // Шрифт
                 fontSize: 14, // Размер шрифта
+                fontWeight: FontWeight.w500, // Средне-жирный шрифт
               ),
             ),
           ),
+          // Настройка темы иконок
+          iconTheme: const IconThemeData(
+            color: Colors.white70, // Цвет иконок
+            size: 20, // Размер иконок
+          ),
+          // Настройка карточек
+          cardTheme: const CardTheme(
+            color: Color(0xFF1F2937), // Цвет фона карточек
+            elevation: 2, // Тень для карточек
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.all(Radius.circular(12)), // Скругленные углы
+            ),
+            margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4), // Отступы
+          ),
         ),
-        // Основной экран приложения
-        home: const ChatScreen(),
+        // Использование созданных маршрутов
+        initialRoute: AppRoutes.home,
+        routes: AppRoutes.getRoutes(),
+        onGenerateRoute: AppRoutes.generateRoute,
       ),
     );
   }

@@ -63,6 +63,7 @@ class AnalyticsService {
       int totalTokens = 0;
 
       for (final modelStats in _modelUsage.values) {
+        // Каждое сообщение считается только один раз
         totalMessages += modelStats['count'] ?? 0;
         totalTokens += modelStats['tokens'] ?? 0;
       }

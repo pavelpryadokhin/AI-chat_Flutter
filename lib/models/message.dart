@@ -79,4 +79,49 @@ class ChatMessage {
       return content;
     }
   }
+
+  // Геттер для получения удобочитаемого имени модели
+  String? get modelName {
+    if (modelId == null) return null;
+
+    // Извлечение имени модели из полного ID
+    String name = modelId!;
+
+    // Удаление префикса провайдера, если он есть
+    if (name.contains('/')) {
+      name = name.split('/').last;
+    }
+
+    // Преобразование имен популярных моделей в более читаемый формат
+    switch (name.toLowerCase()) {
+      case 'gpt-4':
+      case 'gpt-4-turbo':
+        return 'GPT-4';
+      case 'gpt-3.5-turbo':
+        return 'GPT-3.5';
+      case 'claude-3-opus':
+        return 'Claude Opus';
+      case 'claude-3-sonnet':
+        return 'Claude Sonnet';
+      case 'claude-3-haiku':
+        return 'Claude Haiku';
+      case 'mistral-large':
+        return 'Mistral Large';
+      case 'mistral-medium':
+        return 'Mistral Medium';
+      case 'gemini-pro':
+        return 'Gemini Pro';
+      default:
+        // Преобразуем camelCase и snake_case в более читаемый формат
+        name = name
+            .replaceAll('-', ' ')
+            .replaceAll('_', ' ')
+            .split(' ')
+            .map((s) =>
+                s.isNotEmpty ? '${s[0].toUpperCase()}${s.substring(1)}' : '')
+            .join(' ');
+
+        return name;
+    }
+  }
 }

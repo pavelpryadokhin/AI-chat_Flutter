@@ -179,4 +179,146 @@ class DatabaseService {
       };
     }
   }
+
+  // Метод получения расходов по дням
+  Future<Map<DateTime, double>> getExpensesByDay(
+      {DateTime? startDate, DateTime? endDate}) async {
+    try {
+      final db = await database;
+
+      // Настройка условий запроса в зависимости от переданных дат
+      String whereClause = 'is_user = 0 AND cost IS NOT NULL';
+      List<dynamic> whereArgs = [];
+
+      if (startDate != null) {
+        whereClause += ' AND timestamp >= ?';
+        whereArgs.add(startDate.toIso8601String());
+      }
+
+      if (endDate != null) {
+        whereClause += ' AND timestamp <= ?';
+        whereArgs.add(endDate.toIso8601String());
+      }
+
+      // Запрос сообщений от AI с ненулевой стоимостью
+      final List<Map<String, dynamic>> messages = await db.query(
+        'messages',
+        columns: ['cost', 'timestamp'],
+        where: whereClause,
+        whereArgs: whereArgs,
+      );
+
+      // Группировка расходов по дням
+      final Map<DateTime, double> dailyExpenses = {};
+
+      for (final message in messages) {
+        final timestamp = DateTime.parse(message['timestamp'] as String);
+        final cost = message['cost'] as double;
+
+        // Создаем дату без времени (только год, месяц, день)
+        final date = DateTime(timestamp.year, timestamp.month, timestamp.day);
+
+        // Добавляем стоимость к текущему значению или инициализируем с текущей стоимостью
+        dailyExpenses[date] = (dailyExpenses[date] ?? 0) + cost;
+      }
+
+      return dailyExpenses;
+    } catch (e) {
+      debugPrint('Error getting expenses by day: $e');
+      return {};
+    }
+  }
+
+  // Метод получения статистики использования токенов по дням
+  Future<Map<DateTime, Map<String, dynamic>>> getTokenUsageByDay(
+      {DateTime? startDate, DateTime? endDate}) async {
+    try {
+      final db = await database;
+
+      // Настройка условий запроса в зависимости от переданных дат
+      String whereClause = 'tokens IS NOT NULL';
+      List<dynamic> whereArgs = [];
+
+      if (startDate != null) {
+        whereClause += ' AND timestamp >= ?';
+        whereArgs.add(startDate.toIso8601String());
+      }
+
+      if (endDate != null) {
+        whereClause += ' AND timestamp <= ?';
+        whereArgs.add(endDate.toIso8601String());
+      }
+
+      // Запрос сообщений с ненулевым количеством токенов
+      final List<Map<String, dynamic>> messages = await db.query(
+        'messages',
+        columns: ['tokens', 'timestamp', 'model_id', 'is_user', 'cost'],
+        where: whereClause,
+        whereArgs: whereArgs,
+      );
+
+      // Группировка использования токенов по дням
+      final Map<DateTime, Map<String, dynamic>> dailyUsage = {};
+
+      for (final message in messages) {
+        final timestamp = DateTime.parse(message['timestamp'] as String);
+        final tokens = message['tokens'] as int;
+        final isUser = message['is_user'] == 1;
+        final modelId = message['model_id'] as String?;
+        final cost = message['cost'] as double?;
+
+        // Создаем дату без времени (только год, месяц, день)
+        final date = DateTime(timestamp.year, timestamp.month, timestamp.day);
+
+        // Инициализируем запись для текущей даты, если она не существует
+        if (!dailyUsage.containsKey(date)) {
+          dailyUsage[date] = {
+            'total_tokens': 0,
+            'total_cost': 0.0,
+            'message_count': 0,
+            'models': <String, Map<String, dynamic>>{},
+          };
+        }
+
+        // Обновляем общую статистику
+        dailyUsage[date]!['total_tokens'] =
+            (dailyUsage[date]!['total_tokens'] as int) + tokens;
+        dailyUsage[date]!['message_count'] =
+            (dailyUsage[date]!['message_count'] as int) + 1;
+
+        if (cost != null) {
+          dailyUsage[date]!['total_cost'] =
+              (dailyUsage[date]!['total_cost'] as double) + cost;
+        }
+
+        // Обновляем статистику по моделям, если сообщение от AI
+        if (!isUser && modelId != null) {
+          final models =
+              dailyUsage[date]!['models'] as Map<String, Map<String, dynamic>>;
+
+          if (!models.containsKey(modelId)) {
+            models[modelId] = {
+              'tokens': 0,
+              'cost': 0.0,
+              'count': 0,
+            };
+          }
+
+          models[modelId]!['tokens'] =
+              (models[modelId]!['tokens'] as int) + tokens;
+          models[modelId]!['count'] = (models[modelId]!['count'] as int) + 1;
+
+          if (cost != null) {
+            models[modelId]!['cost'] =
+                (models[modelId]!['cost'] as double) + cost;
+          }
+        }
+      }
+
+      return dailyUsage;
+    } catch (e) {
+      debugPrint('Error getting token usage by day: $e');
+      return {};
+    }
+  }
 }

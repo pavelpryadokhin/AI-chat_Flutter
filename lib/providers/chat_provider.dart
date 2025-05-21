@@ -14,6 +14,8 @@ import '../api/openrouter_client.dart';
 import '../services/database_service.dart';
 // Импорт сервиса для аналитики
 import '../services/analytics_service.dart';
+// Импорт пакета для работы с .env файлами
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Основной класс провайдера для управления состоянием чата
 class ChatProvider with ChangeNotifier {
@@ -176,8 +178,12 @@ class ChatProvider with ChangeNotifier {
       // Запись времени начала отправки
       final startTime = DateTime.now();
 
-      // Отправка сообщения в API
-      final response = await _api.sendMessage(content, _currentModel!);
+      // Преобразование истории сообщений в формат для API
+      final apiMessages = _convertMessagesToApiFormat(_messages);
+
+      // Отправка сообщения в API с историей
+      final response =
+          await _api.sendMessageWithHistory(apiMessages, _currentModel!);
       // Логирование ответа API
       _log('API Response: $response');
 
@@ -296,48 +302,6 @@ class ChatProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Метод экспорта логов
-  Future<String> exportLogs() async {
-    // Получение директории для сохранения файла
-    final directory = await getApplicationDocumentsDirectory();
-    // Генерация имени файла с текущей датой и временем
-    final now = DateTime.now();
-    final fileName =
-        'chat_logs_${now.year}${now.month}${now.day}_${now.hour}${now.minute}${now.second}.txt';
-    // Создание файла
-    final file = File('${directory.path}/$fileName');
-
-    // Создание буфера для записи логов
-    final buffer = StringBuffer();
-    buffer.writeln('=== Debug Logs ===\n');
-    // Запись всех логов
-    for (final log in _debugLogs) {
-      buffer.writeln(log);
-    }
-
-    buffer.writeln('\n=== Chat Logs ===\n');
-    // Запись времени генерации
-    buffer.writeln('Generated: ${now.toString()}\n');
-
-    // Запись всех сообщений
-    for (final message in _messages) {
-      buffer.writeln('${message.isUser ? "User" : "AI"} (${message.modelId}):');
-      buffer.writeln(message.content);
-      // Запись количества токенов, если есть
-      if (message.tokens != null) {
-        buffer.writeln('Tokens: ${message.tokens}');
-      }
-      // Запись времени сообщения
-      buffer.writeln('Time: ${message.timestamp}');
-      buffer.writeln('---\n');
-    }
-
-    // Запись содержимого в файл
-    await file.writeAsString(buffer.toString());
-    // Возвращение пути к файлу
-    return file.path;
-  }
-
   // Метод экспорта сообщений в формате JSON
   Future<String> exportMessagesAsJson() async {
     // Получение директории для сохранения файла
@@ -387,5 +351,39 @@ class ChatProvider with ChangeNotifier {
       'response_time_stats': responseTimeStats,
       'message_length_stats': messageLengthStats,
     };
+  }
+
+  // Метод обновления API клиента с новыми настройками
+  Future<void> refreshApiClient() async {
+    try {
+      _log('Refreshing API client with new settings...');
+      // Пересоздаем API клиент с новыми настройками
+      OpenRouterClient().reload();
+
+      // Перезагружаем модели и баланс с новыми настройками
+      await _loadModels();
+      await _loadBalance();
+
+      _log('API client refreshed successfully');
+    } catch (e, stackTrace) {
+      _log('Error refreshing API client: $e');
+      _log('Stack trace: $stackTrace');
+    }
+    notifyListeners();
+  }
+
+  // Метод преобразования сообщений в формат для API
+  List<Map<String, String>> _convertMessagesToApiFormat(
+      List<ChatMessage> messages) {
+    // Преобразуем каждое сообщение в нужный формат
+    return messages.map((message) {
+      // Определяем роль сообщения в зависимости от того, кто его отправил
+      final role = message.isUser ? 'user' : 'assistant';
+      // Возвращаем сообщение в формате API
+      return {
+        'role': role,
+        'content': message.content,
+      };
+    }).toList();
   }
 }
