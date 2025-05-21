@@ -1,5 +1,5 @@
 # AI-Chat 🤖💬
-
+ ![](demo/demo_phone.gif)
 [![Flutter](https://img.shields.io/badge/Flutter-3.3.0+-blue.svg)](https://flutter.dev)
 [![Platforms](https://img.shields.io/badge/Platforms-Android%20%7C%20iOS%20%7C%20Windows%20%7C%20Linux-green.svg)](https://flutter.dev)
 
@@ -57,10 +57,10 @@ AIChatFlutter - это мультиплатформенное приложени
 
 ## 📷 Демонстрация
 
-**Работа на телефоне** [ссылка на видео](demo/demo_phone.mp4)
+**Работа на телефоне** [видео mp4](demo/demo_phone.mp4)
  ![](demo/demo_phone.gif)
 
-**Работа на компьютере** [ссылка на видео](demo/demo_desktop.mp4)
+**Работа на компьютере** [видео mp4](demo/demo_desktop.mp4)
  ![](demo/demo_desktop.gif)
 
 ## 🚀 Установка
