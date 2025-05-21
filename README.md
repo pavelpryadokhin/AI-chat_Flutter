@@ -156,7 +156,6 @@ AIChatFlutter/
 │   └── routes.dart           # Маршрутизация
 ├── assets/                   # Ресурсы приложения
 ├── android/                  # Android конфигурация
-├── ios/                      # iOS конфигурация
 ├── windows/                  # Windows конфигурация
 ├── linux/                    # Linux конфигурация
 ├── pubspec.yaml              # Зависимости проекта
