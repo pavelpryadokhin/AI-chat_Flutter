@@ -1,5 +1,5 @@
 # AI-Chat 🤖💬
-<video src='https://rutube.ru/video/59ccf913267378c4529a4a5c61e7c637/?r=plemwd' width=180/>
+ ![](https://rutube.ru/video/59ccf913267378c4529a4a5c61e7c637/?r=plemwd)
 [![Flutter](https://img.shields.io/badge/Flutter-3.3.0+-blue.svg)](https://flutter.dev)
 [![Platforms](https://img.shields.io/badge/Platforms-Android%20%7C%20iOS%20%7C%20Windows%20%7C%20Linux-green.svg)](https://flutter.dev)
 
