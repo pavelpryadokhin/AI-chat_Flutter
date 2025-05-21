@@ -63,7 +63,7 @@ AIChatFlutter - это мультиплатформенное приложени
 
 1. **Клонирование репозитория**
 ```bash
-git clone https://github.com/neuro-fill/AIChatFlutter.git
+git clone https://github.com/pavelpryadokhin/AI-chat_Flutter.git
 cd AIChatFlutter
 ```
 
